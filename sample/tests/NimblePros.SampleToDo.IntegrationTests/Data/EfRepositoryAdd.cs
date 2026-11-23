@@ -1,0 +1,26 @@
+﻿using NimblePros.SampleToDo.Core.ProjectAggregate;
+
+namespace NimblePros.SampleToDo.IntegrationTests.Data;
+
+public class EfRepositoryAdd : BaseEfRepoTestFixture
+{
+  [Fact]
+  public async Task AddsProjectAndSetsId()
+  {
+    var cancellationToken = TestContext.Current.CancellationToken;
+    var testProjectName = ProjectName.From("testProject");
+    var repository = GetRepository();
+    var project = new Project(testProjectName);
+
+    var item = new ToDoItem(ToDoItemTitle.From("test item title"), ToDoItemDescription.From("test description"));
+    project.AddItem(item);
+
+    await repository.AddAsync(project, cancellationToken);
+
+    var newProject = (await repository.ListAsync(cancellationToken))
+                    .FirstOrDefault();
+
+    Assert.Equal(testProjectName, newProject?.Name);
+    Assert.True(newProject?.Id.Value > 0);
+  }
+}
